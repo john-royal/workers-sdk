@@ -13,6 +13,7 @@ import type {
   KVNamespaceOptions,
   KVResult
 } from './types';
+import type { Scope } from './auth/types';
 
 /**
  * Main class for interacting with Wrangler programmatically
@@ -26,10 +27,15 @@ export class WranglerAPI {
     accountId?: string;
     apiToken?: string;
   } = {}) {
+    // Initialize authentication if credentials are provided
     if (options.apiToken) {
-      // Set up auth with API token if provided
       auth.setApiToken(options.apiToken).catch(() => {
-        // Silently fail, since this is just initialization
+        // Silently fail initialization - user can check auth state with isAuthenticated()
+      });
+    } else {
+      // Try to authenticate from environment variables
+      auth.authFromEnvironment().catch(() => {
+        // Silently fail initialization
       });
     }
     
@@ -44,17 +50,28 @@ export class WranglerAPI {
    */
   async setAuth(options: { 
     apiToken?: string, 
-    accountId?: string
+    accountId?: string,
+    apiKey?: string,
+    email?: string
   }): Promise<AuthResult> {
     let authResult: AuthResult = { success: true };
     
+    // Handle API token authentication
     if (options.apiToken) {
       authResult = await auth.setApiToken(options.apiToken);
       if (!authResult.success) {
         return authResult;
       }
     }
+    // Handle Global API Key authentication
+    else if (options.apiKey && options.email) {
+      authResult = await auth.setGlobalApiKey(options.apiKey, options.email);
+      if (!authResult.success) {
+        return authResult;
+      }
+    }
     
+    // Set account ID if provided
     if (options.accountId) {
       auth.setAccountId(options.accountId);
     }
@@ -69,10 +86,28 @@ export class WranglerAPI {
    */
   async login(options?: {
     browser?: boolean;
-    scopes?: string[];
+    scopes?: Scope[];
     handleAuthUrl?: (url: string) => Promise<void>;
+    onComplete?: (result: AuthResult) => void;
   }): Promise<AuthResult> {
     return auth.login(options);
+  }
+
+  /**
+   * Restore an OAuth session from saved tokens
+   * @param accessToken The OAuth access token
+   * @param refreshToken The OAuth refresh token
+   * @param expiryDate Optional expiration date for the access token (ISO string)
+   * @param scopes Optional scopes for the token
+   * @returns Authentication result
+   */
+  async restoreSession(
+    accessToken: string,
+    refreshToken: string,
+    expiryDate?: string,
+    scopes?: Scope[]
+  ): Promise<AuthResult> {
+    return auth.restoreSession(accessToken, refreshToken, expiryDate, scopes);
   }
 
   /**
@@ -100,11 +135,58 @@ export class WranglerAPI {
   }
 
   /**
+   * Get current authentication method
+   * @returns Authentication method
+   */
+  getAuthMethod(): 'oauth' | 'api_token' | 'email_key' | 'none' {
+    return auth.getAuthMethod();
+  }
+
+  /**
+   * Get OAuth tokens for storing and reusing later
+   * @returns Current OAuth tokens if available, undefined otherwise
+   */
+  getOAuthTokens(): { accessToken?: string; refreshToken?: string; expiry?: string } | undefined {
+    if (auth.getAuthMethod() !== 'oauth') {
+      return undefined;
+    }
+    
+    const accessToken = auth.getAccessToken();
+    const refreshToken = auth.getRefreshToken();
+    
+    if (!accessToken?.value || !refreshToken?.value) {
+      return undefined;
+    }
+    
+    return {
+      accessToken: accessToken.value,
+      refreshToken: refreshToken.value,
+      expiry: accessToken.expiry
+    };
+  }
+
+  /**
+   * Manually refresh authentication tokens (if using OAuth)
+   * @returns True if refresh was successful
+   */
+  async refreshAuth(): Promise<boolean> {
+    return auth.refreshAuth();
+  }
+
+  /**
    * Deploy a Worker to Cloudflare
    * @param options Deployment options
    * @returns Deployment result
    */
   async deploy(options: DeployOptions): Promise<DeployResult> {
+    // Ensure we're authenticated
+    if (!this.isAuthenticated()) {
+      return {
+        success: false,
+        error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+      };
+    }
+    
     // Include authentication details from this instance
     const deployOptions: DeployOptions = {
       ...options,
@@ -141,8 +223,15 @@ export class WranglerAPI {
     action: 'put' | 'delete' | 'list',
     options: SecretOptions
   ): Promise<{ success: boolean; secrets?: string[]; error?: string }> {
+    // Ensure we're authenticated
+    if (!this.isAuthenticated()) {
+      return {
+        success: false,
+        error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+      };
+    }
+    
     // This will be implemented to use Wrangler's secret functionality
-    // For now, return a placeholder
     return {
       success: false,
       error: 'Not implemented yet'
@@ -157,6 +246,14 @@ export class WranglerAPI {
      * List all KV namespaces
      */
     listNamespaces: async (): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -169,6 +266,14 @@ export class WranglerAPI {
      * @param options KV namespace options
      */
     createNamespace: async (options: KVNamespaceOptions): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -181,6 +286,14 @@ export class WranglerAPI {
      * @param options KV namespace options
      */
     deleteNamespace: async (options: KVNamespaceOptions): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -193,6 +306,14 @@ export class WranglerAPI {
      * @param options KV namespace options
      */
     listKeys: async (options: KVNamespaceOptions): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -206,6 +327,14 @@ export class WranglerAPI {
      * @param key Key to get
      */
     getValue: async (options: KVNamespaceOptions, key: string): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -220,6 +349,14 @@ export class WranglerAPI {
      * @param value Value to put
      */
     putValue: async (options: KVNamespaceOptions, key: string, value: string): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -233,6 +370,14 @@ export class WranglerAPI {
      * @param key Key to delete
      */
     deleteValue: async (options: KVNamespaceOptions, key: string): Promise<KVResult> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -254,6 +399,14 @@ export class WranglerAPI {
       objects?: { name: string; className: string }[];
       error?: string;
     }> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,
@@ -270,6 +423,14 @@ export class WranglerAPI {
       object?: { name: string; className: string };
       error?: string;
     }> => {
+      // Ensure we're authenticated
+      if (!this.isAuthenticated()) {
+        return {
+          success: false,
+          error: 'Authentication required. Please authenticate using setAuth() or login() first.'
+        };
+      }
+      
       // Implementation will be added later
       return {
         success: false,

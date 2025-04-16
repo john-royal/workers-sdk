@@ -19,12 +19,14 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
-    "tsup": "^7.2.0"
+    "open": "^8.4.0",
+    "tsup": "^7.2.0",
+    "undici": "^7.8.0"
   },
   "devDependencies": {
+    "@types/node": "^18.11.18",
     "typescript": "^5.0.4",
-    "vitest": "^0.34.3",
-    "@types/node": "^18.11.18"
+    "vitest": "^0.34.3"
   },
   "engines": {
     "node": ">=16.13.0"

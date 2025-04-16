@@ -7,7 +7,13 @@ export * from './wrangler-api';
 
 // Type definitions
 export * from './types';
-export { AuthMethod, ApiCredentials, Scope } from './auth/types';
+export { 
+  ApiCredentials, 
+  Scope, 
+  AuthMethod,
+  AccessToken,
+  RefreshToken 
+} from './auth/types';
 
 // Authentication utilities
 export {
@@ -20,5 +26,7 @@ export {
   getAuthMethod,
   login,
   logout,
-  resetAuth
+  refreshAuth as refreshToken,
+  resetAuth,
+  authFromEnvironment
 } from './auth';
