@@ -1,5 +1,6 @@
 import { deployWorker } from './implementations/deploy';
 import { startDevServer } from './implementations/dev';
+import * as auth from './auth';
 
 import type {
   DeployOptions,
@@ -17,11 +18,6 @@ import type {
  * Main class for interacting with Wrangler programmatically
  */
 export class WranglerAPI {
-  private config: {
-    accountId?: string;
-    apiToken?: string;
-  };
-
   /**
    * Create a new WranglerAPI instance
    * @param options Configuration options
@@ -30,10 +26,16 @@ export class WranglerAPI {
     accountId?: string;
     apiToken?: string;
   } = {}) {
-    this.config = {
-      accountId: options.accountId,
-      apiToken: options.apiToken
-    };
+    if (options.apiToken) {
+      // Set up auth with API token if provided
+      auth.setApiToken(options.apiToken).catch(() => {
+        // Silently fail, since this is just initialization
+      });
+    }
+    
+    if (options.accountId) {
+      auth.setAccountId(options.accountId);
+    }
   }
 
   /**
@@ -43,26 +45,58 @@ export class WranglerAPI {
   async setAuth(options: { 
     apiToken?: string, 
     accountId?: string
-  }): Promise<void> {
+  }): Promise<AuthResult> {
+    let authResult: AuthResult = { success: true };
+    
     if (options.apiToken) {
-      this.config.apiToken = options.apiToken;
+      authResult = await auth.setApiToken(options.apiToken);
+      if (!authResult.success) {
+        return authResult;
+      }
     }
+    
     if (options.accountId) {
-      this.config.accountId = options.accountId;
+      auth.setAccountId(options.accountId);
     }
+    
+    return authResult;
   }
 
   /**
    * Login to Cloudflare using OAuth
+   * @param options OAuth login options
    * @returns Authentication result
    */
-  async login(): Promise<AuthResult> {
-    // This will be implemented to use Wrangler's login functionality
-    // For now, return a placeholder
-    return {
-      success: false,
-      error: 'Not implemented yet'
-    };
+  async login(options?: {
+    browser?: boolean;
+    scopes?: string[];
+    handleAuthUrl?: (url: string) => Promise<void>;
+  }): Promise<AuthResult> {
+    return auth.login(options);
+  }
+
+  /**
+   * Logout from Cloudflare authentication
+   * @returns Authentication result
+   */
+  async logout(): Promise<AuthResult> {
+    return auth.logout();
+  }
+
+  /**
+   * Check if currently authenticated
+   * @returns True if authenticated
+   */
+  isAuthenticated(): boolean {
+    return auth.isAuthenticated();
+  }
+
+  /**
+   * Get current account ID
+   * @returns Account ID if set
+   */
+  getAccountId(): string | undefined {
+    return auth.getAccountId();
   }
 
   /**
@@ -74,7 +108,7 @@ export class WranglerAPI {
     // Include authentication details from this instance
     const deployOptions: DeployOptions = {
       ...options,
-      accountId: options.accountId || this.config.accountId,
+      accountId: options.accountId || this.getAccountId(),
     };
     
     return deployWorker(deployOptions);
