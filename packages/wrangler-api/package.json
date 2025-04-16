@@ -1,0 +1,50 @@
+{
+  "name": "wrangler-api",
+  "version": "0.1.0",
+  "description": "Programmatic API for Cloudflare Workers deployment and management",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "peerDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "tsup": "^7.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4",
+    "vitest": "^0.34.3",
+    "@types/node": "^18.11.18"
+  },
+  "engines": {
+    "node": ">=16.13.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudflare/workers-sdk.git",
+    "directory": "packages/wrangler-api"
+  },
+  "bugs": {
+    "url": "https://github.com/cloudflare/workers-sdk/issues"
+  },
+  "homepage": "https://github.com/cloudflare/workers-sdk#readme",
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "wrangler",
+    "api"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
