@@ -131,6 +131,21 @@ export function getCredentials(): ApiCredentials | undefined {
 }
 
 /**
+ * Get the current API token (if using token authentication)
+ * 
+ * @returns The API token or undefined
+ */
+export function getApiToken(): { value: string } | undefined {
+  const credentials = getCredentials();
+  
+  if (credentials && 'apiToken' in credentials) {
+    return { value: credentials.apiToken };
+  }
+  
+  return undefined;
+}
+
+/**
  * Check if the user is authenticated
  * 
  * @returns True if the user is authenticated

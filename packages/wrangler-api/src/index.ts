@@ -22,6 +22,7 @@ export {
   setAccountId,
   getAccountId,
   getCredentials,
+  getApiToken,
   isAuthenticated,
   getAuthMethod,
   login,

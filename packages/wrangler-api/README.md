@@ -178,14 +178,56 @@ const stopDev = await wranglerApi.dev({
   
   // Optional parameters
   config: './wrangler.toml', // path to wrangler.toml
+  name: 'my-dev-worker', // name of the worker
   port: 8787, // local port to listen on
   ip: '127.0.0.1', // local IP to listen on
   inspect: true, // enable inspector
   env: 'dev', // environment to use
-  vars: { KEY: 'value' }, // environment variables
-  localPersistence: true, // enable local persistence
   compatibilityDate: '2023-10-30',
-  compatibilityFlags: ['nodejs_compat']
+  compatibilityFlags: ['nodejs_compat'],
+  watch: true, // watch for changes to the worker
+  localPersistence: true, // enable local persistence
+  persistenceDirectory: './.wrangler/state', // where to store persistent data
+  
+  // Worker bindings
+  bindings: [
+    {
+      type: 'kv_namespace',
+      name: 'MY_KV',
+      id: 'demo-kv-id',
+    },
+    {
+      type: 'r2_bucket',
+      name: 'MY_BUCKET',
+      bucket_name: 'demo-bucket',
+    },
+    {
+      type: 'durable_object',
+      name: 'MY_DURABLE_OBJECT',
+      class_name: 'DemoObject',
+    },
+    {
+      type: 'environment_variable',
+      name: 'API_KEY',
+      value: 'example-api-key',
+    }
+  ],
+  
+  // Environment variables and secrets
+  vars: { KEY: 'value' }, // environment variables (shorthand)
+  secrets: { SECRET: 'value' }, // secrets for local development
+  
+  // Routes and upstream
+  routes: ['example.com/*', { pattern: 'api.example.com/*', custom_domain: true }],
+  upstream: 'https://api.example.com', // upstream server to proxy requests to
+  
+  // Remote vs local mode
+  remote: false, // true to run on Cloudflare's network (requires auth)
+  
+  // Other options
+  verbose: true, // enable verbose logging
+  liveReload: true, // auto-reload on changes
+  testScheduled: true, // enable testing scheduled events
 });
 
 // Stop the development server when done
@@ -323,6 +365,8 @@ const result: DeployResult = await api.deploy(deployOptions);
 For more examples, check out the `examples` directory in the repository:
 - `basic-usage.js` - Simple JavaScript usage
 - `typescript-usage.ts` - TypeScript usage with more advanced options
+- `programmatic-deployment.ts` - Advanced deployment with all binding types
+- `dev-server.ts` - Running a local dev server with full configuration
 
 ## License
 
