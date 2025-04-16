@@ -4,6 +4,8 @@ A programmatic API for deploying and managing Cloudflare Workers.
 
 This package provides a JavaScript/TypeScript API for working with Cloudflare Workers, allowing you to integrate Wrangler functionality directly into your applications, build tools, or CI/CD pipelines.
 
+**Key Feature:** Deploy Workers programmatically without requiring a wrangler.toml file. All configuration can be specified directly in code.
+
 ## Features
 
 - **Authentication** - API token, OAuth, and Global API Key authentication methods

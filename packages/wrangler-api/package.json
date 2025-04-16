@@ -19,6 +19,7 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
+    "form-data": "^4.0.0",
     "open": "^8.4.0",
     "tsup": "^7.2.0",
     "undici": "^7.8.0"

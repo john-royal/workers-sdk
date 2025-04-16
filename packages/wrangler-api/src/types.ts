@@ -1,4 +1,363 @@
 /**
+ * Binding types for Workers
+ */
+export type BindingType = 
+  | 'kv_namespace'
+  | 'r2_bucket'
+  | 'durable_object'
+  | 'queue'
+  | 'service'
+  | 'd1_database'
+  | 'vectorize_index'
+  | 'hyperdrive'
+  | 'ai'
+  | 'analytics_engine'
+  | 'browser'
+  | 'dispatch_namespace'
+  | 'mtls_certificate'
+  | 'secret'
+  | 'environment_variable'
+  | 'wasm_module'
+  | 'text_blob'
+  | 'data_blob';
+
+/**
+ * Generic binding interface
+ */
+export interface Binding {
+  /**
+   * Name of the binding (how it's accessed in the Worker code)
+   */
+  name: string;
+  
+  /**
+   * Type of binding
+   */
+  type: BindingType;
+}
+
+/**
+ * KV namespace binding
+ */
+export interface KVNamespaceBinding extends Binding {
+  type: 'kv_namespace';
+  
+  /**
+   * ID of the KV namespace
+   */
+  id: string;
+}
+
+/**
+ * R2 bucket binding
+ */
+export interface R2BucketBinding extends Binding {
+  type: 'r2_bucket';
+  
+  /**
+   * Name of the R2 bucket
+   */
+  bucket_name: string;
+  
+  /**
+   * Jurisdiction for the R2 bucket
+   */
+  jurisdiction?: string;
+}
+
+/**
+ * Durable Object binding
+ */
+export interface DurableObjectBinding extends Binding {
+  type: 'durable_object';
+  
+  /**
+   * Class name of the Durable Object
+   */
+  class_name: string;
+  
+  /**
+   * External script name, if the Durable Object is defined in another Worker
+   */
+  script_name?: string;
+  
+  /**
+   * Environment of the script, if using environments
+   */
+  environment?: string;
+}
+
+/**
+ * Queue binding
+ */
+export interface QueueBinding extends Binding {
+  type: 'queue';
+  
+  /**
+   * Queue name
+   */
+  queue_name: string;
+}
+
+/**
+ * Service binding
+ */
+export interface ServiceBinding extends Binding {
+  type: 'service';
+  
+  /**
+   * Service name
+   */
+  service: string;
+  
+  /**
+   * Environment of the service
+   */
+  environment?: string;
+}
+
+/**
+ * D1 database binding
+ */
+export interface D1DatabaseBinding extends Binding {
+  type: 'd1_database';
+  
+  /**
+   * Database ID
+   */
+  database_id: string;
+  
+  /**
+   * Database name
+   */
+  database_name?: string;
+}
+
+/**
+ * Vectorize index binding
+ */
+export interface VectorizeBinding extends Binding {
+  type: 'vectorize_index';
+  
+  /**
+   * Vectorize index ID
+   */
+  index_name: string;
+}
+
+/**
+ * Hyperdrive binding
+ */
+export interface HyperdriveBinding extends Binding {
+  type: 'hyperdrive';
+  
+  /**
+   * Hyperdrive ID
+   */
+  id: string;
+}
+
+/**
+ * AI binding
+ */
+export interface AIBinding extends Binding {
+  type: 'ai';
+}
+
+/**
+ * Analytics Engine binding
+ */
+export interface AnalyticsEngineBinding extends Binding {
+  type: 'analytics_engine';
+  
+  /**
+   * Dataset name
+   */
+  dataset?: string;
+}
+
+/**
+ * Browser rendering binding
+ */
+export interface BrowserBinding extends Binding {
+  type: 'browser';
+}
+
+/**
+ * Dispatch namespace binding
+ */
+export interface DispatchNamespaceBinding extends Binding {
+  type: 'dispatch_namespace';
+  
+  /**
+   * Namespace ID
+   */
+  namespace: string;
+}
+
+/**
+ * mTLS certificate binding
+ */
+export interface MTLSCertificateBinding extends Binding {
+  type: 'mtls_certificate';
+  
+  /**
+   * Certificate ID
+   */
+  certificate_id: string;
+}
+
+/**
+ * Environment variable binding
+ */
+export interface EnvironmentVariableBinding extends Binding {
+  type: 'environment_variable';
+  
+  /**
+   * Value of the environment variable
+   */
+  value: string;
+}
+
+/**
+ * WASM module binding
+ */
+export interface WasmModuleBinding extends Binding {
+  type: 'wasm_module';
+  
+  /**
+   * Path to the WASM module
+   */
+  path: string;
+}
+
+/**
+ * Text blob binding
+ */
+export interface TextBlobBinding extends Binding {
+  type: 'text_blob';
+  
+  /**
+   * Path to the text file
+   */
+  path: string;
+}
+
+/**
+ * Data blob binding
+ */
+export interface DataBlobBinding extends Binding {
+  type: 'data_blob';
+  
+  /**
+   * Path to the data file
+   */
+  path: string;
+}
+
+/**
+ * Union type of all possible bindings
+ */
+export type WorkerBinding = 
+  | KVNamespaceBinding
+  | R2BucketBinding
+  | DurableObjectBinding
+  | QueueBinding
+  | ServiceBinding
+  | D1DatabaseBinding
+  | VectorizeBinding
+  | HyperdriveBinding
+  | AIBinding
+  | AnalyticsEngineBinding
+  | BrowserBinding
+  | DispatchNamespaceBinding
+  | MTLSCertificateBinding
+  | EnvironmentVariableBinding
+  | WasmModuleBinding
+  | TextBlobBinding
+  | DataBlobBinding;
+
+/**
+ * Cron trigger configuration
+ */
+export interface CronTrigger {
+  /**
+   * Cron schedule in crontab format
+   */
+  cron: string;
+  
+  /**
+   * Optional timezone for the cron schedule
+   */
+  timezone?: string;
+}
+
+/**
+ * Custom route specification
+ */
+export interface CustomRoute {
+  /**
+   * Route pattern
+   */
+  pattern: string;
+  
+  /**
+   * Custom domain flag
+   */
+  custom_domain?: boolean;
+  
+  /**
+   * Zone ID (if using a zone)
+   */
+  zone_id?: string;
+  
+  /**
+   * Zone name (if using a zone name instead of ID)
+   */
+  zone_name?: string;
+}
+
+/**
+ * Type for routes - either string patterns or custom route objects
+ */
+export type Route = string | CustomRoute;
+
+/**
+ * Durable Object migration configuration
+ */
+export interface DurableObjectMigration {
+  /**
+   * Tag for the migration
+   */
+  tag: string;
+  
+  /**
+   * New classes to create in this migration
+   */
+  new_classes?: string[];
+  
+  /**
+   * Classes to rename in this migration
+   */
+  renamed_classes?: Array<{
+    /**
+     * From class name
+     */
+    from: string;
+    
+    /**
+     * To class name
+     */
+    to: string;
+  }>;
+  
+  /**
+   * Classes to delete in this migration
+   */
+  deleted_classes?: string[];
+}
+
+/**
  * Configuration for deploying a Worker
  */
 export interface DeployOptions {
@@ -13,7 +372,8 @@ export interface DeployOptions {
   name?: string;
   
   /**
-   * Path to wrangler.toml config file
+   * Path to wrangler.toml config file (optional, for backward compatibility)
+   * If provided, this will override programmatic configuration
    */
   config?: string;
   
@@ -24,6 +384,7 @@ export interface DeployOptions {
   
   /**
    * Compatibility date for the Worker
+   * Required for deployment
    */
   compatibilityDate?: string;
   
@@ -31,11 +392,6 @@ export interface DeployOptions {
    * Compatibility flags for the Worker
    */
   compatibilityFlags?: string[];
-  
-  /**
-   * Variables to bind to the Worker
-   */
-  vars?: Record<string, string>;
   
   /**
    * Account ID to deploy to
@@ -46,6 +402,11 @@ export interface DeployOptions {
    * Whether to minify the Worker code
    */
   minify?: boolean;
+  
+  /**
+   * Whether to use Node.js compatibility features
+   */
+  nodejsCompat?: boolean;
   
   /**
    * Whether to upload source maps
@@ -60,7 +421,152 @@ export interface DeployOptions {
   /**
    * Routes to assign to the Worker
    */
-  routes?: string[];
+  routes?: Route[];
+  
+  /**
+   * Custom domain to assign to the Worker (shorthand for routes)
+   */
+  customDomain?: string;
+  
+  /**
+   * Worker bindings (KV, R2, DO, etc.)
+   */
+  bindings?: WorkerBinding[];
+  
+  /**
+   * Environment variables to bind to the Worker
+   * Shorthand for environment variable bindings
+   */
+  vars?: Record<string, string>;
+  
+  /**
+   * Secrets to bind to the Worker
+   * These are stored encrypted and not visible after creation
+   */
+  secrets?: Record<string, string>;
+  
+  /**
+   * Whether to use the modules format (ESM) or service worker format
+   * Defaults to 'modules' for new Workers
+   */
+  format?: 'modules' | 'service-worker';
+  
+  /**
+   * Path to assets directory to deploy with the Worker
+   */
+  assets?: string;
+  
+  /**
+   * Cron triggers for the Worker
+   */
+  triggers?: CronTrigger[];
+  
+  /**
+   * Durable Object migrations
+   */
+  migrations?: DurableObjectMigration[];
+  
+  /**
+   * Usage model for the Worker
+   * Default is 'bundled'
+   */
+  usage?: 'bundled' | 'unbound';
+  
+  /**
+   * Limits for the Worker
+   */
+  limits?: {
+    /**
+     * CPU time limit in milliseconds
+     */
+    cpu_ms?: number;
+    
+    /**
+     * Memory limit in MB
+     */
+    memory_mb?: number;
+  };
+  
+  /**
+   * Queue producers configuration
+   */
+  queueProducers?: Array<{
+    /**
+     * Queue name
+     */
+    queue: string;
+    
+    /**
+     * Optional delivery delay in seconds
+     */
+    delivery_delay?: number;
+  }>;
+  
+  /**
+   * Queue consumers configuration
+   */
+  queueConsumers?: Array<{
+    /**
+     * Queue name
+     */
+    queue: string;
+    
+    /**
+     * Type of consumer
+     */
+    type?: 'worker' | 'http_pull';
+    
+    /**
+     * Maximum batch size
+     */
+    max_batch_size?: number;
+    
+    /**
+     * Maximum retries
+     */
+    max_retries?: number;
+    
+    /**
+     * Maximum batch timeout in seconds
+     */
+    max_batch_timeout?: number;
+    
+    /**
+     * Visibility timeout in ms
+     */
+    visibility_timeout_ms?: number;
+    
+    /**
+     * Dead letter queue
+     */
+    dead_letter_queue?: string;
+  }>;
+  
+  /**
+   * Whether to keep existing environment variables
+   * If false (default), existing vars will be replaced with those specified
+   */
+  keepVars?: boolean;
+  
+  /**
+   * Whether to enable logpush
+   */
+  logpush?: boolean;
+  
+  /**
+   * Placement configuration for the Worker
+   */
+  placement?: {
+    /**
+     * Placement mode
+     */
+    mode: 'smart';
+    
+    /**
+     * Placement hint (if using smart placement)
+     */
+    hint?: 'low-latency' | 'security';
+  };
 }
 
 /**
@@ -73,7 +579,8 @@ export interface DevOptions {
   script: string;
   
   /**
-   * Path to wrangler.toml config file
+   * Path to wrangler.toml config file (optional, for backward compatibility)
+   * If provided, this will override programmatic configuration
    */
   config?: string;
   
@@ -98,14 +605,9 @@ export interface DevOptions {
   env?: string;
   
   /**
-   * Variables to bind to the Worker
+   * Name of the Worker
    */
-  vars?: Record<string, string>;
-  
-  /**
-   * Whether to enable local persistence
-   */
-  localPersistence?: boolean;
+  name?: string;
   
   /**
    * Compatibility date for the Worker
@@ -116,6 +618,108 @@ export interface DevOptions {
    * Compatibility flags for the Worker
    */
   compatibilityFlags?: string[];
+  
+  /**
+   * Whether to use Node.js compatibility features
+   */
+  nodejsCompat?: boolean;
+  
+  /**
+   * Worker bindings (KV, R2, DO, etc.)
+   */
+  bindings?: WorkerBinding[];
+  
+  /**
+   * Environment variables to bind to the Worker
+   * Shorthand for environment variable bindings
+   */
+  vars?: Record<string, string>;
+  
+  /**
+   * Secrets to bind to the Worker locally
+   */
+  secrets?: Record<string, string>;
+  
+  /**
+   * Whether to use the modules format (ESM) or service worker format
+   * Defaults to 'modules' for new Workers
+   */
+  format?: 'modules' | 'service-worker';
+  
+  /**
+   * Path to assets directory to serve with the Worker
+   */
+  assets?: string;
+  
+  /**
+   * Whether to enable local persistence for KV, DO, etc.
+   */
+  localPersistence?: boolean;
+  
+  /**
+   * Directory to store local persistence data
+   */
+  persistenceDirectory?: string;
+  
+  /**
+   * Whether to watch for file changes and restart automatically
+   */
+  watch?: boolean;
+  
+  /**
+   * Local routes to test against
+   */
+  routes?: Route[];
+  
+  /**
+   * Whether to upstream requests to another server (e.g., for testing with a real backend)
+   */
+  upstream?: string;
+  
+  /**
+   * Whether to enable verbose logging
+   */
+  verbose?: boolean;
+  
+  /**
+   * Whether to add local host entries
+   */
+  local?: boolean;
+  
+  /**
+   * Whether to build the Worker before starting dev server
+   */
+  build?: boolean;
+  
+  /**
+   * Whether to minify the Worker code when building
+   */
+  minify?: boolean;
+  
+  /**
+   * Whether to open the browser automatically
+   */
+  open?: boolean;
+  
+  /**
+   * Whether to show the dev UI
+   */
+  ui?: boolean;
+  
+  /**
+   * Whether to enable debugging functionality
+   */
+  debug?: boolean;
+  
+  /**
+   * Whether to use legacy compatibility mode
+   */
+  legacyEnv?: boolean;
+  
+  /**
+   * Whether to use remote mode (connects to Cloudflare's development platform)
+   */
+  remote?: boolean;
 }
 
 /**
